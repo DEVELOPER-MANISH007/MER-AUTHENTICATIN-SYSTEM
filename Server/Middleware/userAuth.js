@@ -18,7 +18,8 @@ const userAuth = async (req, res, next) => {
       return res.json({ success: false, message: "Invalid token." });
     }
 
-    req.body.userId = tokenDecoded.id;
+    // Attach user id to request (not to body; body can be undefined for GET)
+    req.userId = tokenDecoded.id;
     return next();
   } catch (error) {
     return res.json({ success: false, message: error.message });
