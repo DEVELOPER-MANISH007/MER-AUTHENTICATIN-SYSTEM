@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createContext } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -11,10 +11,33 @@ export const AppContextProvider = (props) => {
   const backendUrl = "http://localhost:5000";
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(false);
+  const getAuthState = async () => {
+
+try {
+  const {data} = await axios.get(backendUrl + "/api/auth/is-auth", {
+    withCredentials: true
+  });
+  if(data.success){
+    setIsLoggedin(true);
+    getUserData();
+  }
+
+} catch (error) {
+  setIsLoggedin(false);
+  setUserData(null);
+  // Don't show error toast on page load if user is not authenticated
+  if (error.response?.status !== 401) {
+    toast.error(error.message);
+  }
+}
+
+  };
 
   const getUserData = async () => {
     try {
-      const { data } = await axios.get(backendUrl + "/api/user/data");
+      const { data } = await axios.get(backendUrl + "/api/user/data", {
+        withCredentials: true
+      });
       if (data.success) {
         setUserData(data.userData);
       } else {
@@ -24,6 +47,10 @@ export const AppContextProvider = (props) => {
       toast.error(error.message);
     }
   };
+  useEffect(() => { 
+    getAuthState();
+  }, []);
+
 
   const value = {
     backendUrl,
