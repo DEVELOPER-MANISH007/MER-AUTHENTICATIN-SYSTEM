@@ -3,6 +3,7 @@ import userModel from "../Models/userModel.js";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
 import transporter from "../config/nodemailer.js";
+import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE, WELCOME_TEMPLATE, SIGNUP_WELCOME_TEMPLATE } from "../config/emailTemplates.js";
 
 // ye user yaha pr register hoga bole to signup krega
 export const register = async (req, res) => {
@@ -40,8 +41,8 @@ export const register = async (req, res) => {
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: email,
-      subject: "Welcome to Our My App!",
-      text: `Hi ${name},\n\nThank you for registering at Our My App. We're excited to have you on board!\n\nBest regards,\nThe My App Team: ${email}`,
+      subject: "Welcome to Our Platform! 🚀",
+      html: SIGNUP_WELCOME_TEMPLATE(name, email),
     };
     await transporter.sendMail(mailOptions);
 
@@ -120,7 +121,7 @@ export const sendVerifyOtp = async (req, res) => {
     if (user.isAccountVerified) {
       return res.json({ success: false, message: "Account already verified" });
     }
-    const otp = String(Math.floor(10000 + Math.random() * 900000));
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
     user.verifyOtp = otp;
     user.verifyOtpExpiredAt = Date.now() + 24 * 60 * 60 * 1000;
     await user.save();
@@ -128,8 +129,8 @@ export const sendVerifyOtp = async (req, res) => {
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: user.email,
-      subject: "Verify Your Account",
-      text: `Your OTP is ${otp} verify your account usig this otp`,
+      subject: "Verify Your Account - OTP Code",
+      html: EMAIL_VERIFY_TEMPLATE(otp),
     };
     await transporter.sendMail(mailOptions);
     return res.json({ success: true, message: "OTP sent to your email" });
@@ -192,14 +193,15 @@ export const sendResetOtp = async (req, res) => {
       return res.json({ success: false, message: "User not found" });
     }
 
-    const otp = String(Math.floor(10000 + Math.random() * 900000));
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
     user.resetOtp = otp;
     user.resetOtpExpiredAt = Date.now() + 15 * 60 * 1000;
     await user.save();
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: user.email,
-      subject: `Your OTP for resetting your password is  ${otp} . Use ths OTP to proceed with resetting your password. `,
+      subject: "Password Reset - OTP Code",
+      html: PASSWORD_RESET_TEMPLATE(otp),
     };
     await transporter.sendMail(mailOptions);
     res.json({ success: true, message: "OTP sent to your email" });

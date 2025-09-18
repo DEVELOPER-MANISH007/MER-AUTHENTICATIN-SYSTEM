@@ -14,7 +14,8 @@ const ResetPassword = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isEmailSent, setIsEmailSent] = useState("");
-  const [isOtpSubmited] = useState(false);
+  const [isOtpSubmited, setOtpSubnmited] = useState(false);
+  const [otp, setOtp] = useState("");
 
   const inputRefs = React.useRef([]);
 
@@ -48,7 +49,7 @@ const ResetPassword = () => {
     const next = inputRefs.current[Math.min(digits.length, 5)];
     if (next) next.focus();
   };
-
+ // to send the email for forgot password
   const onSubmitEmail = async (e) => {
     e.preventDefault();
     try {
@@ -64,6 +65,33 @@ const ResetPassword = () => {
         toast.error(data.message);
       }
       data.success && setIsEmailSent(true);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  // for submit the otp
+  const onSubmitOTP = async (e) => {
+    e.preventDefault();
+    const otpArray = inputRefs.current.map((el) => el.value);
+    const otpValue = otpArray.join("");
+    if (!/^\d{6}$/.test(otpValue)) {
+      toast.error("Please enter a valid 6-digit OTP");
+      return;
+    }
+    setOtp(otpValue);
+    setOtpSubnmited(true);
+  };
+
+  const onSubmitNewPassword = async (e) => {
+    e.preventDefault();
+    try {
+      const { data } = await axios.post(
+        backendUrl + `/api/auth/reset-password`,
+        { email, otp, newPassword }
+      );
+      data.success ? toast.success(data.message) : toast.error(data.message);
+      data.success && navigate("/login");
     } catch (error) {
       toast.error(error.message);
     }
@@ -107,7 +135,7 @@ const ResetPassword = () => {
 
       {/* otp enter form */}
       {!isOtpSubmited && isEmailSent && (
-        <form className="bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm  ">
+        <form onSubmit={onSubmitOTP} className="bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm  ">
           <h1 className="text-white text-2xl font-semibold text-center mb-4">
             Reset Password Otp
           </h1>
@@ -142,7 +170,7 @@ const ResetPassword = () => {
       {/* enter new Password */}
 
       {isOtpSubmited && isEmailSent && (
-        <form className="bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm ">
+        <form onSubmit={onSubmitNewPassword} className="bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm ">
           <h1 className="text-white text-2xl font-semibold text-center mb-4">
             Enter New Password
           </h1>
