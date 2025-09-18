@@ -7,7 +7,6 @@ const Home = () => {
     <div className='flex flex-col items-center min-h-screen bg-[url("/bg_img.png")] bg-cover bg-center'>
      <Navbar  />
      <Header  />
-   
     </div>
   )
 }

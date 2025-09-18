@@ -140,12 +140,13 @@ export const sendVerifyOtp = async (req, res) => {
 
 // *email verify krne ke liye hai bhai ye oka otp daalne pr check krega ki otp sahi ha ya na
 export const verifyEmail = async (req, res) => {
-  const { userId, otp } = req.body;
-  if (!userId || !otp) {
+  const { userId: userIdFromBody, otp } = req.body;
+  const targetUserId = userIdFromBody || req.userId;
+  if (!targetUserId || !otp) {
     return res.json({ success: false, message: "Missing Details" });
   }
   try {
-    const user = await userModel.findById(userId);
+    const user = await userModel.findById(targetUserId);
     if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
